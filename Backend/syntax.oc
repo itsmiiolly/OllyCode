@@ -1,0 +1,23 @@
+ollycode:syntax
+
+########################################################
+# OllyCode is incredibly easy to use                   #
+#                                                      #
+# Modules are contained in {}                          #
+# 'define' defines code not impletemented in OllyCode  #
+# Variables are defined with var = 'varName'           #
+########################################################
+
+define syntax {
+	print = "Print a message"
+	user = "The end user"
+}
+
+define statements {
+	if
+	when
+	elseif
+	then
+}
+
+end
