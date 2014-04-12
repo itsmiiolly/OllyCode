@@ -1,0 +1,7 @@
+ollycode:ollyloader:bukkit
+
+define bukkitCode {
+	player.sendMessage() = "Send a message to the player"
+}
+
+end
