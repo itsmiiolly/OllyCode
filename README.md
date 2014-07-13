@@ -1,7 +1,7 @@
 OllyCode
 ========
 
-The world's easiest programming language.
+Programming doesn't _have_ to be hard.
 
 Defining a function:
 
