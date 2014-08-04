@@ -18,6 +18,7 @@ define statements {
 	when
 	elseif
 	then
+	for
 }
 
 end
