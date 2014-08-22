@@ -1,0 +1,16 @@
+ollycode:main
+ollycode:ollyloader
+
+if banana = true {
+	print = "banana"
+	user = "the user that checked banana"
+  }
+  
+if banana = false {
+  print = "not banana"
+  user = "the user that checked banana"
+  }
+  
+  
+  
+end
