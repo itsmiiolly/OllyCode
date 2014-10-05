@@ -1,7 +1,7 @@
 ollycode:ollyloader:bukkit
 
 when user joins {
-	send ="Welcome!"
+  sendMessage "Welcome!" to user
 }
 
 end
