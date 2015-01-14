@@ -54,4 +54,9 @@ public class OCTokenizingRuleSet {
 	public OCTokenType forChar(char id) {
 		return characters.get(id);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("OCTokenizingRuleSet{identifiers=%s, characters=%s}", identifiers, characters);
+	}
 }

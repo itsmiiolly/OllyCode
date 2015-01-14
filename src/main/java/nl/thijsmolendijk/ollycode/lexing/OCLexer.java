@@ -15,7 +15,7 @@ public class OCLexer {
 		this.ruleSet = rules;
 		this.input = input;
 		this.currentIndex = 0;
-		this.lastCharacter = ' ';
+		this.lastCharacter = ' ';		
 	}
 	
 	/**
@@ -28,14 +28,15 @@ public class OCLexer {
 		int startingIndex = currentIndex;
 
 		if (Character.isLetter(lastCharacter)) { // identifier: [a-zA-Z][a-zA-Z0-9]*
-			StringBuilder identifier = new StringBuilder(lastCharacter);
+			StringBuilder identifier = new StringBuilder().append(lastCharacter);
 			while (Character.isLetterOrDigit((lastCharacter = nextChar())))
 				identifier.append(lastCharacter);
 			String id = identifier.toString();
 			
 			//Check for rule in OCTokenizingRuleSet
-			OCTokenType type = null;
-			if ((type = ruleSet.forIdentifier(id)) != null) return new OCToken(type, startingIndex, currentIndex - startingIndex);
+			if (ruleSet.forIdentifier(id) != null) {
+				return new OCToken(ruleSet.forIdentifier(id), startingIndex, currentIndex - startingIndex);
+			}
 			
 			return new OCToken(OCTokenType.IDENTIFIER, id, startingIndex, currentIndex - startingIndex);
 		}
@@ -79,7 +80,7 @@ public class OCLexer {
 		}
 
 		// Check for end of file.  Don't eat the EOF.
-		if (lastCharacter == -1) {
+		if (lastCharacter == (char) -1) {
 			return new OCToken(OCTokenType.EOF, startingIndex, startingIndex);
 		}
 		

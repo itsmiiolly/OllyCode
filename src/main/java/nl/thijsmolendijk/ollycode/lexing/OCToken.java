@@ -56,6 +56,6 @@ public class OCToken {
 	
 	@Override
 	public String toString() {
-		return value == null ? type.name() : type.name() + " (" + value + ")";
+		return value == null ? type.name() : type.name() + " ('" + value + "')";
 	}
 }

@@ -20,10 +20,18 @@ public abstract class BasicParser {
 	}
 	
 	/**
+	 * Made public for the RPPL.
+	 * @return the current token
+	 */
+	public OCToken getCurrentToken() {
+		return currentToken;
+	}
+	
+	/**
 	 * Gets the next token from the lexer and assigns the {@code currentToken} and {@code previousToken} variables
 	 * @return the new token
 	 */
-	protected OCToken nextToken() {
+	public OCToken nextToken() {
 		previousToken = currentToken;
 		return currentToken = lexer.getNextToken();
 	}
@@ -61,6 +69,21 @@ public abstract class BasicParser {
 	}
 	
 	/**
+	 * @see BasicParser#expect(OCTokenType)
+	 */
+	protected void expect(char c) {
+		expect(c, "Expected "+c+". Received %s");
+	}
+	
+	/**
+	 * @see #expect(OCTokenType, String)
+	 */
+	protected void expect(char c, String errorMessage) {
+		if (currentToken != null && currentToken.getType() == OCTokenType.CHARACTER && currentToken.getValue().equals(c)) return;
+		showErrorMessage(errorMessage, currentToken.toString());
+	}
+	
+	/**
 	 * Indicates that the parser expects the currentToken to be of the provided type
 	 * @param type the type
 	 */
@@ -76,6 +99,25 @@ public abstract class BasicParser {
 	protected void expect(OCTokenType type, String errorMessage) {
 		if (currentToken != null && currentToken.getType() == type) return;
 		showErrorMessage(errorMessage, currentToken.toString());
+	}
+	
+	/**
+	 * Indicates that the parser expects the next token to be the provided char
+	 * @param c the char
+	 */
+	protected void expectNext(char c) {
+		nextToken(); //Advance to next token
+		expect(c);
+	}
+	
+	/**
+	 * Indicates that the parser expects the next token to be the provided char
+	 * @param c the char
+	 * @param errorMessage the error to be shown when the token is not the char
+	 */
+	protected void expectNext(char c, String errorMessage) {
+		nextToken(); //Advance to next token
+		expect(c, errorMessage);
 	}
 	
 	/**
@@ -107,8 +149,8 @@ public abstract class BasicParser {
 		int endIndex = currentToken.getEndIndex() + 10 >= lexer.getInput().length() ? lexer.getInput().length() : currentToken.getEndIndex() + 10;
 		
 		String codeSlice = lexer.getInput().substring(beginIndex, endIndex);
-		System.err.println("\u001B31;1m[-] " + String.format(format, objects)); //Print error in red
-		System.err.println("\u001B31;1m[-] At: "+codeSlice);
+		System.err.println("\033[31m[-] " + String.format(format, objects)); //Print error in red
+		System.err.println("\033[31m[-] At: "+codeSlice + "\033[0m");
 		System.exit(-1);
 	}
 }
