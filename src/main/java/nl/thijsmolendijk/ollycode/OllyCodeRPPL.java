@@ -20,7 +20,7 @@ import nl.thijsmolendijk.ollycode.parsing.OCParser;
  */
 public class OllyCodeRPPL {
 	public static void main(String... args) throws Exception {
-		System.out.println("[!] OllyCode RPPR (Read Parse Print Loop) v0.1-SNAPSHOT");
+		System.out.println("[!] OllyCode RPPL (Read Parse Print Loop) v0.1-SNAPSHOT");
 		System.out.println("[!] (c) 2015 by molenzwiebel and ItsMiiOlly");
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
