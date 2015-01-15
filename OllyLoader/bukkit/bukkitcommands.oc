@@ -1,9 +1,0 @@
-ollycode:ollyloader:bukkit
-
-define bukkitCode {
-  #This defines a native method, sendMessage, using the Player class and the String class.
-  #OllyLoader will try to find its native defenition and call it
-  native sendMessage with Player, String
-}
-
-end

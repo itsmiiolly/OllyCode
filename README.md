@@ -3,31 +3,19 @@ OllyCode
 
 Programming doesn't _have_ to be hard.
 
-Defining a function:
+FAQ
+-----
+*What is OllyCode?*
 
-    define <NAME> using <VARS (var1, var2)> {
-      give var1 to var2
-    }
-`Example`:
+OllyCode is a simple and light-weight programming language aimed at those wanting to learn a computer language quick and easily.
 
-    define give using item, player {
-      player.getInventory().addItem(item)
-    }
-    
-`Example usage:`
+*Is this a real thing?*
 
-    give item to player
+It was originally a joke, but with the power of molen it's becoming a reality!
 
+*What will I be able to do with it*
 
-Defining listener:
+Computer things.
 
-    when <object> <event> <extra variables> {
-      //Code
-    }
-`Example usage:`
-
-    when player clicks block {
-      give Item(STONE) to player
-    }
-    
-_Thanks molen!_
+-----
+*Lead Programmer*: molenzwiebel 
