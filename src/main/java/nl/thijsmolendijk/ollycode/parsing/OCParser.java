@@ -389,26 +389,26 @@ public class OCParser extends BasicParser {
 			if (!(expr instanceof VariableDefinitionStatement) && !(expr instanceof FunctionStatement)) showErrorMessage("Unexpected statement "+expr+" ("+expr.getClass().getSimpleName()+"). Can only have variable definitions and functions in class body");
 			if (expr instanceof VariableDefinitionStatement) {
 				VariableDefinitionStatement st = (VariableDefinitionStatement) expr;
-				if (vars.containsKey(st.name)) throw new RuntimeException("Duplicate class variable "+st.name);
-				vars.put(st.name, st);
+				if (vars.stream().anyMatch(x -> x.name.equalsIgnoreCase(st.name))) throw new RuntimeException("Duplicate class variable "+st.name);
+				vars.add(st);
 			}
 
 			if (expr instanceof FunctionStatement) {
 				FunctionStatement fExpr = (FunctionStatement) expr;
-				if (funcs.containsKey(fExpr.getName()) && fExpr.getArgCount() == funcs.get(fExpr.getName()).getArgCount())
+				if (funcs.stream().anyMatch(x -> x.getName().equalsIgnoreCase(fExpr.getName()) && x.getArgCount() == fExpr.getArgCount()))
 					showErrorMessage("Duplicate function "+fExpr.getName()+" with same amount of parameters");
 
 				if (!hasNewMethod && fExpr.getName().equals("new")) hasNewMethod = true;
-				funcs.put(fExpr.getName(), fExpr);
+				funcs.add(fExpr);
 			}
 		}
 		nextToken(); //consume }
 
 		if (!hasNewMethod) {
-			funcs.put("new", new FunctionStatement("new", new ArrayList<>(), new BodyStatement(new ArrayList<>())));
+			funcs.add(new FunctionStatement("new", new ArrayList<>(), new BodyStatement(new ArrayList<>())));
 		}
 
-		ClassDefinitionStatement retval = new ClassDefinitionStatement(name, parents, new ArrayList<>(vars.values()), new ArrayList<>(funcs.values()));
+		ClassDefinitionStatement retval = new ClassDefinitionStatement(name, parents, vars, funcs);
 		return retval;
 	}
 
