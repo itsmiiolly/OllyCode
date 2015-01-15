@@ -80,7 +80,27 @@ public enum OCTokenType {
 	/**
 	 * Indicates that the lexer did not match any token, and thus returned the character currently being looked at. getValue() will contain the char as a {@link Character} instance
 	 */
-	CHARACTER;
+	CHARACTER,
+	/**
+	 * <code>>=</code> binary expression
+	 */
+	GT_EQ,
+	/**
+	 * <code><=</code> binary expression
+	 */
+	LT_EQ,
+	/**
+	 * <code>&&</code> binary expression
+	 */
+	AND,
+	/**
+	 * <code>||</code> binary expression
+	 */
+	OR,
+	/**
+	 * <code>==</code> binary expression
+	 */
+	EQUAL;
 	
 	public static int getTokenPrecedence(char token) {
 		return -1;

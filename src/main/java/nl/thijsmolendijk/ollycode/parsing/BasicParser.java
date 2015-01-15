@@ -33,7 +33,9 @@ public abstract class BasicParser {
 	 */
 	public OCToken nextToken() {
 		previousToken = currentToken;
-		return currentToken = lexer.getNextToken();
+		currentToken = lexer.getNextToken();
+		System.out.println("Advanced from "+previousToken+" to "+currentToken);
+		return currentToken;
 	}
 	
 	/**

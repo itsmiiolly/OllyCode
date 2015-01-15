@@ -53,7 +53,12 @@ public class OCParser extends BasicParser {
 		.identifier("return", RETURN)
 		.identifier("for", FOR)
 		.identifier("class", CLASS)
-		.identifier("while", WHILE));
+		.identifier("while", WHILE)
+		.substring(">=", GT_EQ)
+		.substring("<=", LT_EQ)
+		.substring("&&", AND)
+		.substring("||", OR)
+		.substring("==", EQUAL));
 
 		nextToken(); //advance to the first token.
 	}
@@ -128,7 +133,7 @@ public class OCParser extends BasicParser {
 		} else if (isChar('(')) {
 			returnValue = parseParen();
 		} else if (shouldThrowUnexpectedTokenErrors) { //dirty dirty
-			showErrorMessage("Unknown token when expecting a statement, received %s", currentToken.toString());
+			showErrorMessage("Unknown token when expecting an expression, received %s", currentToken.toString());
 		}
 
 		//Parse member access

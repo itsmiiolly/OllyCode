@@ -1,5 +1,7 @@
 package nl.thijsmolendijk.ollycode.lexing;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 /**
  * The main lexer that is responsible for analyzing the given input and splitting it up into {@link OCToken}s
  * @author molenzwiebel
@@ -73,15 +75,23 @@ public class OCLexer {
 		if (lastCharacter == '#' || (lastCharacter == '/' && peekChar() == '/')) {
 			// Comment until end of line.
 			do lastCharacter = nextChar();
-			while (lastCharacter != -1 && lastCharacter != '\n' && lastCharacter != '\r');
+			while (lastCharacter != (char) -1 && lastCharacter != '\n' && lastCharacter != '\r');
 
-			if (lastCharacter != -1)
+			if (lastCharacter != (char) -1)
 				return getNextToken();
 		}
 
 		// Check for end of file.  Don't eat the EOF.
 		if (lastCharacter == (char) -1) {
 			return new OCToken(OCTokenType.EOF, startingIndex, startingIndex);
+		}
+		
+		String substr = input.substring(currentIndex - 1, currentIndex - 1 + ruleSet.longestSubstring());
+		if (ruleSet.forSubstring(substr) != null) {
+			Pair<OCTokenType, Integer> substrResult = ruleSet.forSubstring(substr);
+			for (int i = 0; i < substrResult.getRight(); i++)
+				lastCharacter = nextChar();
+			return new OCToken(substrResult.getLeft(), startingIndex, currentIndex - startingIndex);
 		}
 		
 		// Otherwise, just return the character as its ascii value.
@@ -117,6 +127,6 @@ public class OCLexer {
 	public char peekChar() {
 		if (currentIndex + 1 >= input.length())
 			return (char) -1;
-		return input.charAt(currentIndex+1);
+		return input.charAt(currentIndex);
 	}
 }
