@@ -3,7 +3,6 @@ package nl.thijsmolendijk.ollycode.parsing;
 import static nl.thijsmolendijk.ollycode.lexing.OCTokenType.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import nl.thijsmolendijk.ollycode.ast.ASTElement;
@@ -380,8 +379,8 @@ public class OCParser extends BasicParser {
 		expect(BEGIN_BLOCK, "Expected { after class definition, received %s");
 		nextToken(); //consume {
 
-		HashMap<String, VariableDefinitionStatement> vars = new HashMap<>();
-		HashMap<String, FunctionStatement> funcs = new HashMap<>();
+		List<VariableDefinitionStatement> vars = new ArrayList<>();
+		List<FunctionStatement> funcs = new ArrayList<>();
 		boolean hasNewMethod = false;
 		while (!isType(END_BLOCK)) {
 			if (isType(EOF)) showErrorMessage("Unexpected EOF, expecting }");
