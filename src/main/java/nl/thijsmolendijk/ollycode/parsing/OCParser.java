@@ -14,7 +14,6 @@ import nl.thijsmolendijk.ollycode.ast.expression.IdentifierExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.MemberExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.NullExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.NumberLiteralExpression;
-import nl.thijsmolendijk.ollycode.ast.expression.ReturnExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.StringLiteralExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.VariableAssignmentExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.binary.ConcatExpression;
@@ -25,6 +24,7 @@ import nl.thijsmolendijk.ollycode.ast.statement.ClassDefinitionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.ForStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.FunctionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.IfStatement;
+import nl.thijsmolendijk.ollycode.ast.statement.ReturnStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.VariableDefinitionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.WhileStatement;
 import nl.thijsmolendijk.ollycode.lexing.OCTokenType;
@@ -319,7 +319,7 @@ public class OCParser extends BasicParser {
 		nextToken(); //consume {
 		while (!isType(END_BLOCK)) {
 			ASTElement ast = parseASTElement();
-			contents.add(ast instanceof Expression ? new ReturnExpression((Expression) ast) : ast);
+			contents.add(ast instanceof Expression ? new ReturnStatement((Expression) ast) : ast);
 			if (isType(EOF)) showErrorMessage("Unexpected EOF. Expected '}'");
 		}
 		nextToken(); //consume }

@@ -5,11 +5,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import nl.thijsmolendijk.ollycode.ast.ASTElement;
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.Statement;
-import nl.thijsmolendijk.ollycode.ast.expression.ReturnExpression;
 import nl.thijsmolendijk.ollycode.ast.statement.BodyStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.FunctionStatement;
+import nl.thijsmolendijk.ollycode.ast.statement.ReturnStatement;
 import nl.thijsmolendijk.ollycode.lexing.OCToken;
 import nl.thijsmolendijk.ollycode.lexing.OCTokenType;
 import nl.thijsmolendijk.ollycode.parsing.OCParser;
@@ -58,9 +59,9 @@ public class OllyCodeRPPL {
 	}
 
 	private static void handleTopLevelExpression(OCParser parser) {
-		Expression result = parser.parseExpression();
+		ASTElement result = parser.parseExpression();
 		if (result != null) {
-			result = new ReturnExpression(result);
+			result = new ReturnStatement((Expression) result);
 			System.out.println("\033[32m[+] Parsed top level expression (wrapped in function): \n\033[0m"+new FunctionStatement("", new ArrayList<>(), new BodyStatement(Arrays.asList(result))));
 		} else {
 			parser.nextToken(); //Advance to the next token if something is messed up
