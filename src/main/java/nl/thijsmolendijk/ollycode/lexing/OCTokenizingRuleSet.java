@@ -80,6 +80,7 @@ public class OCTokenizingRuleSet {
 	 * @return the type and the size of the substring
 	 */
 	public Pair<OCTokenType, Integer> forSubstring(String str) {
+		if (str.isEmpty()) return null;
 		Entry<String, OCTokenType> entry = substrings.entrySet().stream().filter(x -> x.getKey().startsWith(str)).findFirst().orElse(null);
 		if (entry == null) return null;
 		return Pair.of(entry.getValue(), entry.getKey().length());
