@@ -8,7 +8,6 @@ import java.util.List;
 import nl.thijsmolendijk.ollycode.ast.ASTElement;
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.Statement;
-import nl.thijsmolendijk.ollycode.ast.expression.BinaryExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.BooleanExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.FunctionCallExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.IdentifierExpression;
@@ -18,6 +17,9 @@ import nl.thijsmolendijk.ollycode.ast.expression.NumberLiteralExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.ReturnExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.StringLiteralExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.VariableAssignmentExpression;
+import nl.thijsmolendijk.ollycode.ast.expression.binary.ConcatExpression;
+import nl.thijsmolendijk.ollycode.ast.expression.binary.NumericOperationExpressions;
+import nl.thijsmolendijk.ollycode.ast.expression.binary.ValueComparisonExpressions;
 import nl.thijsmolendijk.ollycode.ast.statement.BodyStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.ClassDefinitionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.ForStatement;
@@ -58,7 +60,8 @@ public class OCParser extends BasicParser {
 		.substring("<=", LT_EQ)
 		.substring("&&", AND)
 		.substring("||", OR)
-		.substring("==", EQUAL));
+		.substring("==", EQUAL)
+		.substring("!=", NOT_EQUAL));
 
 		nextToken(); //advance to the first token.
 	}
@@ -80,157 +83,25 @@ public class OCParser extends BasicParser {
 	public Statement parseStatement() {
 		Statement returnValue = null;		
 		if (isType(CLASS)) {
-			returnValue = parseClass();
+			returnValue = parseClassStatement();
 		} else if (isType(FOR)) {
-			returnValue = parseFor();
+			returnValue = parseForStatement();
 		} else if (isType(VAR)) {
-			returnValue = parseVariableDefinition();
+			returnValue = parseVariableDefinitionStatement();
 		} else if (isType(IF)) {
-			returnValue = parseIf();
+			returnValue = parseIfStatement();
 		} else if (isType(DEF)) {
-			returnValue = parseFunctionDefinition();
+			returnValue = parseFunctionDefinitionStatement();
 		} else if (isType(WHILE)) {
-			returnValue = parseWhile();
+			returnValue = parseWhileStatement();
 		} else if (isType(BEGIN_BLOCK)) {
-			returnValue = parseBlock();
+			returnValue = parseBlockStatement();
 		} else if (shouldThrowUnexpectedTokenErrors) { //again, dirty hack
 			showErrorMessage("Unknown token when expecting a statement, received %s", currentToken.toString());
 		}
 		return returnValue;
 	}
-
-	/**
-	 * Tries to parse the {@code currentToken} into a {@link Expression}. This is achieved by first trying to parse a binary operation, and if this fails the parser tries to match a keyword.
-	 */
-	public Expression parseExpression() {
-		Expression left = _parseExpression();
-		if (left == null) return null;
-
-		return parseBinaryOperationRight(0, left);
-	}
-
-	/**
-	 * Does the same as {@link #parseExpression()} but does not try to match a binary expression. This method should <i>not</i> be called by anything other than {@link #parseExpression()} and {@link #parseBinaryOperationRight(int, Expression)}.
-	 */
-	private Expression _parseExpression() {
-		Expression returnValue = null;
-
-		if (isType(IDENTIFIER)) {
-			returnValue = parseIdentifier();
-		} else if (isType(NUMBER)) {
-			returnValue = parseNumber();
-		} else if (isType(STRING)) {
-			returnValue = parseString();
-		} else if (isType(NULL)) {
-			nextToken(); //consume null
-			returnValue = new NullExpression();
-		} else if (isType(TRUE)) {
-			nextToken(); //consume true
-			returnValue = new BooleanExpression(true);
-		} else if (isType(FALSE)) {
-			nextToken(); //consume false
-			returnValue = new BooleanExpression(false);
-		} else if (isChar('(')) {
-			returnValue = parseParen();
-		} else if (shouldThrowUnexpectedTokenErrors) { //dirty dirty
-			showErrorMessage("Unknown token when expecting an expression, received %s", currentToken.toString());
-		}
-
-		//Parse member access
-		while (isChar('.')) {
-			nextToken(); //consume .
-			expect(IDENTIFIER, "Expected identifier or function call when accessing members using '.'. Received %s");
-			returnValue = new MemberExpression(returnValue, parseIdentifier());
-		}
-
-		return returnValue;
-	}
-
-	/**
-	 * Parses a binary operation with regards to precedence.
-	 * Accepts grammar:
-	 * expression operator expression
-	 */
-	public Expression parseBinaryOperationRight(int expressionPrecedence, Expression left) {
-		// If this is a binop, find its precedence.
-		while (true) {
-			int prec = currentToken.getValue() instanceof Character ? OCTokenType.getTokenPrecedence(currentToken.<Character>getValue()) : -1;
-			if (prec < expressionPrecedence)
-				return left;
-
-			char operation = currentToken.getValue();
-			nextToken();  // eat operation
-
-			Expression right = _parseExpression();
-			if (right == null) return null;
-
-			int nextPrec = currentToken.getValue() instanceof Character ? OCTokenType.getTokenPrecedence(currentToken.<Character>getValue()) : -1;
-			if (prec < nextPrec) {
-				right = parseBinaryOperationRight(prec + 1, right);
-				if (right == null) return null;
-			}
-
-			left = new BinaryExpression(String.valueOf(operation), left, right);
-		}
-	}
-
-	/**
-	 * Parses a simple string into its AST equivalent. This just extracts the token value and returns an expression for it.
-	 * Accepts grammar:
-	 * "value"
-	 */
-	public Expression parseString() {
-		String value = currentToken.getValue();
-		nextToken(); //consume the string
-		return new StringLiteralExpression(value);
-	}
-
-	/**
-	 * Parses a simple number into its AST equivalent. This just extracts the token value and returns an expression for it.
-	 * Accepts grammar:
-	 * ##[.##]
-	 */
-	public Expression parseNumber() {
-		Double value = currentToken.getValue();
-		nextToken(); //consume the string
-		return new NumberLiteralExpression(value);
-	}
-
-	/**
-	 * Parses any expression between parentheses:
-	 * Accepts grammar:
-	 * ( expression )
-	 */
-	public Expression parseParen() {
-		nextToken(); // eat (.
-
-		Expression expr = parseExpression();
-		if (expr == null) return null;
-
-		if (!isChar(')')) showErrorMessage("Expected ')' in parenthesized expression, received %s", currentToken.toString());
-		nextToken(); // eat ).
-
-		return expr;
-	}
-
-	/**
-	 * Parses the initial definition of a variable.
-	 * Accepts grammar:
-	 * var name [= value]
-	 */
-	public Statement parseVariableDefinition() {
-		expectNext(IDENTIFIER, "Expected variable name after 'var', received %s");
-
-		String varName = currentToken.getValue();
-		nextToken(); //eat var name
-		if (!isChar('=')) return new VariableDefinitionStatement(varName, null);
-
-		nextToken(); //eat =
-		Expression value = parseExpression();
-		if (value == null) showErrorMessage("Expected expression after 'var "+varName+" = '");
-		return new VariableDefinitionStatement(varName, value);
-	}
-
+	
 	/**
 	 * Parses a function definition.
 	 * Accepts grammar:
@@ -238,7 +109,7 @@ public class OCParser extends BasicParser {
 	 *   [expressions]
 	 * }
 	 */
-	public Statement parseFunctionDefinition() {
+	public Statement parseFunctionDefinitionStatement() {
 		expectNext(IDENTIFIER, "Expected function name after 'def', received %s"); //also consumes def
 		String functionName = currentToken.getValue();
 		expectNext('(', "Expected ( after function name, received %s"); //also consumes name
@@ -259,8 +130,27 @@ public class OCParser extends BasicParser {
 		expect(')', "Expected ) after function parameter names, received %s");
 		nextToken(); //consume )
 
-		return new FunctionStatement(functionName, argNames, parseBlock());
+		return new FunctionStatement(functionName, argNames, parseBlockStatement());
 	}
+	
+	/**
+	 * Parses the initial definition of a variable.
+	 * Accepts grammar:
+	 * var name [= value]
+	 */
+	public Statement parseVariableDefinitionStatement() {
+		expectNext(IDENTIFIER, "Expected variable name after 'var', received %s");
+
+		String varName = currentToken.getValue();
+		nextToken(); //eat var name
+		if (!isChar('=')) return new VariableDefinitionStatement(varName, null);
+
+		nextToken(); //eat =
+		Expression value = parseExpression();
+		if (value == null) showErrorMessage("Expected expression after 'var "+varName+" = '");
+		return new VariableDefinitionStatement(varName, value);
+	}
+	
 
 	/**
 	 * Parses a for loop.
@@ -269,7 +159,7 @@ public class OCParser extends BasicParser {
 	 *   [statements]
 	 * }
 	 */
-	public Statement parseFor() {
+	public Statement parseForStatement() {
 		expectNext('(', "Expected ( after 'for', received %s"); //also consumes for
 		nextToken(); //consume (
 
@@ -288,9 +178,9 @@ public class OCParser extends BasicParser {
 		expect(')', "Expected ) at the end of for definition, received %s");
 		nextToken(); //consume )
 
-		return new ForStatement(initialization, condition, step, parseBlock());
+		return new ForStatement(initialization, condition, step, parseBlockStatement());
 	}
-
+	
 	/**
 	 * Parses a while loop.
 	 * Accepts grammar:
@@ -298,7 +188,7 @@ public class OCParser extends BasicParser {
 	 *   [statements]
 	 * }
 	 */
-	public Statement parseWhile() {
+	public Statement parseWhileStatement() {
 		expectNext('(', "Expected ( after 'while', received %s"); //also consumes while
 		nextToken(); //consume (
 
@@ -307,9 +197,9 @@ public class OCParser extends BasicParser {
 		expect(')', "Expected ) after while condition, received %s");
 		nextToken(); //consume )
 
-		return new WhileStatement(condition, parseBlock());
+		return new WhileStatement(condition, parseBlockStatement());
 	}
-
+	
 	/**
 	 * Parses an if statement.
 	 * Accepts grammar:
@@ -321,7 +211,7 @@ public class OCParser extends BasicParser {
 	 *   [statements]
 	 * }]
 	 */
-	public Statement parseIf() {
+	public Statement parseIfStatement() {
 		expectNext('(', "Expected ( after 'for', received %s"); //also consumes for
 		nextToken(); //consume (
 
@@ -330,7 +220,7 @@ public class OCParser extends BasicParser {
 		if (ifCondition == null) showErrorMessage("Expected condition in if");
 		expect(')', "Expected ) after if condition, received %s");
 		nextToken(); //consume )
-		BodyStatement thenBody = parseBlock();
+		BodyStatement thenBody = parseBlockStatement();
 
 		//else and elseif parsing
 		BodyStatement elseBody = null;
@@ -339,7 +229,7 @@ public class OCParser extends BasicParser {
 			if (isType(ELSE)) {
 				nextToken(); //consume else
 				if (elseBody != null) showErrorMessage("An if statement can only have one else block");
-				elseBody = parseBlock();
+				elseBody = parseBlockStatement();
 			} else {
 				expectNext('(', "Expected ( after elseif, received %s"); //also consumes elseif
 				nextToken(); //consume (
@@ -349,13 +239,13 @@ public class OCParser extends BasicParser {
 				if (!isChar(')')) throw new RuntimeException("Expected ) after elseif condition");
 				nextToken(); //consume )
 
-				elseifs.add(Pair.of(condition, parseBlock()));
+				elseifs.add(Pair.of(condition, parseBlockStatement()));
 			}
 		}
 
 		return new IfStatement(ifCondition, thenBody, elseifs, elseBody);
 	}
-
+	
 	/**
 	 * Parses a class definition.
 	 * Accepts grammar:
@@ -364,7 +254,7 @@ public class OCParser extends BasicParser {
 	 *   DEFS
 	 * }
 	 */
-	public Statement parseClass() {
+	public Statement parseClassStatement() {
 		expectNext(IDENTIFIER, "Expected class name after 'class', received %s");
 		String name = currentToken.getValue();
 		nextToken(); //consume class name
@@ -416,6 +306,261 @@ public class OCParser extends BasicParser {
 		ClassDefinitionStatement retval = new ClassDefinitionStatement(name, parents, vars, funcs);
 		return retval;
 	}
+	
+	/**
+	 * Parses a block (statements and expressions between { and })
+	 * Accepts grammar:
+	 * { [expressions] }
+	 */
+	public BodyStatement parseBlockStatement() {
+		List<ASTElement> contents = new ArrayList<>();
+
+		expect(BEGIN_BLOCK, "Expected '{' at begin of block, received %s");
+		nextToken(); //consume {
+		while (!isType(END_BLOCK)) {
+			ASTElement ast = parseASTElement();
+			contents.add(ast instanceof Expression ? new ReturnExpression((Expression) ast) : ast);
+			if (isType(EOF)) showErrorMessage("Unexpected EOF. Expected '}'");
+		}
+		nextToken(); //consume }
+
+		return new BodyStatement(contents);
+	}
+
+	/**
+	 * Tries to parse the {@code currentToken} into a {@link Expression}. This is achieved by first trying to parse a binary operation, and if this fails the parser tries to match a keyword.
+	 */
+	public Expression parseExpression() {
+		return parseLogicalOrExpression();
+	}
+	
+	/**
+	 * Parses logical OR.
+	 * Accepts grammar:
+	 * statement || statement
+	 */
+	public Expression parseLogicalOrExpression() {
+		Expression left = parseLogicalAndExpression();
+		if (left == null) return null;
+		
+		if (isType(OR)) {
+			nextToken(); //consume ||
+			Expression right = parseLogicalOrExpression();
+			if (right == null) return null;
+			
+			left = new ValueComparisonExpressions.Or(left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses logical AND.
+	 * Accepts grammar:
+	 * statement && statement
+	 */
+	public Expression parseLogicalAndExpression() {
+		Expression left = parseValueComparisonExpression();
+		if (left == null) return null;
+		
+		if (isType(AND)) {
+			nextToken(); //consume &&
+			Expression right = parseLogicalAndExpression();
+			if (right == null) return null;
+			
+			left = new ValueComparisonExpressions.And(left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses is equal and is not equal
+	 * Accepts grammar:
+	 * statement (==|!=) statement
+	 */
+	public Expression parseValueComparisonExpression() {
+		Expression left = parseLesserThanExpression();
+		if (left == null) return null;
+		
+		if (isType(EQUAL) || isType(NOT_EQUAL)) {
+			OCTokenType type = currentToken.getType();
+			nextToken(); //consume == or !=
+			
+			Expression right = parseValueComparisonExpression();
+			if (right == null) return null;
+			
+			left = type == EQUAL ? new ValueComparisonExpressions.Compare(true, left, right) : new ValueComparisonExpressions.Compare(false, left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses lesser than and lesser than or equal
+	 * Accepts grammar:
+	 * statement (<|<=) statement
+	 */
+	public Expression parseLesserThanExpression() {
+		Expression left = parseGreaterThanExpression();
+		if (left == null) return null;
+		
+		if (isChar('<') || isType(LT_EQ)) {
+			OCTokenType type = currentToken.getType();
+			nextToken(); //consume < or <=
+			
+			Expression right = parseLesserThanExpression();
+			if (right == null) return null;
+			
+			left = type == LT_EQ ? new ValueComparisonExpressions.LesserThan(true, left, right) : new ValueComparisonExpressions.LesserThan(false, left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses greater than and greater than or equal
+	 * Accepts grammar:
+	 * statement (>|>=) statement
+	 */
+	public Expression parseGreaterThanExpression() {
+		Expression left = parseConcatExpression();
+		if (left == null) return null;
+		
+		if (isChar('>') || isType(GT_EQ)) {
+			OCTokenType type = currentToken.getType();
+			nextToken(); //consume < or <=
+			
+			Expression right = parseGreaterThanExpression();
+			if (right == null) return null;
+			
+			left = type == GT_EQ ? new ValueComparisonExpressions.GreaterThan(true, left, right) : new ValueComparisonExpressions.GreaterThan(false, left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses concat.
+	 * Accepts grammar:
+	 * statement - statement
+	 */
+	public Expression parseConcatExpression() {
+		Expression left = parseSubtractionExpression();
+		if (left == null) return null;
+		
+		if (isChar('+')) {
+			nextToken(); //consume +
+			Expression right = parseConcatExpression();
+			if (right == null) return null;
+			
+			left = new ConcatExpression(left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses subtraction.
+	 * Accepts grammar:
+	 * statement - statement
+	 */
+	public Expression parseSubtractionExpression() {
+		Expression left = parseMultiplicationExpression();
+		if (left == null) return null;
+		
+		if (isChar('-')) {
+			nextToken(); //consume -
+			Expression right = parseSubtractionExpression();
+			if (right == null) return null;
+			
+			left = new NumericOperationExpressions.Minus(left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses multiplication.
+	 * Accepts grammar:
+	 * statement * statement
+	 */
+	public Expression parseMultiplicationExpression() {
+		Expression left = parseDivisionExpression();
+		if (left == null) return null;
+		
+		if (isChar('*')) {
+			nextToken(); //consume *
+			Expression right = parseMultiplicationExpression();
+			if (right == null) return null;
+			
+			left = new NumericOperationExpressions.Multiply(left, right);
+		}
+		
+		return left;
+	}
+	
+	/**
+	 * Parses division.
+	 * Accepts grammar:
+	 * statement / statement
+	 */
+	public Expression parseDivisionExpression() {
+		Expression left = parseOtherExpression();
+		if (left == null) return null;
+		
+		if (isChar('/')) {
+			nextToken(); //consume /
+			Expression right = parseDivisionExpression();
+			if (right == null) return null;
+			
+			left = new NumericOperationExpressions.Divide(left, right);
+		}
+		
+		return left;
+	}
+
+	/**
+	 * Parses identifiers, numbers, strings, null, true, false, parenthesized expressions and member access.
+	 */
+	private Expression parseOtherExpression() {
+		Expression returnValue = null;
+
+		if (isType(IDENTIFIER)) {
+			returnValue = parseIdentifier();
+		} else if (isType(NUMBER)) {
+			returnValue = new NumberLiteralExpression(currentToken.getValue());
+			nextToken(); //consume number
+		} else if (isType(STRING)) {
+			returnValue = new StringLiteralExpression(currentToken.getValue());
+			nextToken(); //consume string
+		} else if (isType(NULL)) {
+			nextToken(); //consume null
+			returnValue = new NullExpression();
+		} else if (isType(TRUE)) {
+			nextToken(); //consume true
+			returnValue = new BooleanExpression(true);
+		} else if (isType(FALSE)) {
+			nextToken(); //consume false
+			returnValue = new BooleanExpression(false);
+		} else if (isChar('(')) {
+			nextToken(); //eat (
+			returnValue = parseExpression();
+			if (!isChar(')')) showErrorMessage("Expected ')' in parenthesized expression, received %s", currentToken.toString());
+			nextToken(); // eat )
+		} else if (shouldThrowUnexpectedTokenErrors) { //dirty dirty
+			showErrorMessage("Unknown token when expecting an expression, received %s", currentToken.toString());
+		}
+
+		//Parse member access
+		while (isChar('.')) {
+			nextToken(); //consume .
+			expect(IDENTIFIER, "Expected identifier or function call when accessing members using '.'. Received %s");
+			returnValue = new MemberExpression(returnValue, parseIdentifier());
+		}
+
+		return returnValue;
+	}
 
 	/**
 	 * Parses an identifier. An identifier is a string that matches [a-zA-Z][a-zA-Z0-9]*. This parser will also parse variable assignments and method calls because they come directly after an identifier.
@@ -455,42 +600,5 @@ public class OCParser extends BasicParser {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Parses a list of expressions delimited by ,.
-	 * Accepts grammar:
-	 * expression[, expression][, expression]
-	 */
-	public List<Expression> parseExpressionList() {
-		List<Expression> contents = new ArrayList<>();
-		while (true) {
-			Expression expr = parseExpression();
-			if (expr == null) showErrorMessage("Expected expression");
-			nextToken(); //consume identifier
-			if (!isChar(',')) break;
-			nextToken(); //consume ,
-		}
-		return contents;
-	}
-
-	/**
-	 * Parses a block (statements and expressions between { and })
-	 * Accepts grammar:
-	 * { [expressions] }
-	 */
-	public BodyStatement parseBlock() {
-		List<ASTElement> contents = new ArrayList<>();
-
-		expect(BEGIN_BLOCK, "Expected '{' at begin of block, received %s");
-		nextToken(); //consume {
-		while (!isType(END_BLOCK)) {
-			ASTElement ast = parseASTElement();
-			contents.add(ast instanceof Expression ? new ReturnExpression((Expression) ast) : ast);
-			if (isType(EOF)) showErrorMessage("Unexpected EOF. Expected '}'");
-		}
-		nextToken(); //consume }
-
-		return new BodyStatement(contents);
 	}
 }

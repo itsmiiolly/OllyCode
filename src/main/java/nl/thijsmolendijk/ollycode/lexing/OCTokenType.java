@@ -100,7 +100,11 @@ public enum OCTokenType {
 	/**
 	 * <code>==</code> binary expression
 	 */
-	EQUAL;
+	EQUAL,
+	/**
+	 * <code>!=</code> binary expression
+	 */
+	NOT_EQUAL;
 	
 	public static int getTokenPrecedence(char token) {
 		return -1;

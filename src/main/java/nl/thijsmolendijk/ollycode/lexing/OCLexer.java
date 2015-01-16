@@ -86,7 +86,8 @@ public class OCLexer {
 			return new OCToken(OCTokenType.EOF, startingIndex, startingIndex);
 		}
 		
-		String substr = input.substring(currentIndex - 1, currentIndex - 1 + ruleSet.longestSubstring());
+		int endIndex = currentIndex - 1 + ruleSet.longestSubstring() < input.length() ? currentIndex - 1 + ruleSet.longestSubstring() : input.length() - 1;
+		String substr = input.substring(currentIndex - 1, endIndex);
 		if (ruleSet.forSubstring(substr) != null) {
 			Pair<OCTokenType, Integer> substrResult = ruleSet.forSubstring(substr);
 			for (int i = 0; i < substrResult.getRight(); i++)

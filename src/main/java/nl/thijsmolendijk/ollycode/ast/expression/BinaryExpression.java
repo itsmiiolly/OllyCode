@@ -7,7 +7,7 @@ import nl.thijsmolendijk.ollycode.ast.Expression;
  * Examples are 1 + 2, where 1 is the left expression, + is the operator and 2 is the right expression.
  * @author molenzwiebel
  */
-public class BinaryExpression implements Expression {
+public abstract class BinaryExpression implements Expression {
 	private Expression left;
 	private Expression right;
 	private String operation;

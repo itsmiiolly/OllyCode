@@ -40,7 +40,7 @@ public class OllyCodeRPPL {
 	}
 	
 	private static void handleCls(OCParser parser) {
-		Statement result = parser.parseClass();
+		Statement result = parser.parseClassStatement();
 		if (result != null) {
 			System.out.println("\033[32m[+] Parsed class: \n\033[0m"+result);
 		} else {
@@ -49,7 +49,7 @@ public class OllyCodeRPPL {
 	}
 
 	private static void handleDefinition(OCParser parser) {
-		Statement result = parser.parseFunctionDefinition();
+		Statement result = parser.parseFunctionDefinitionStatement();
 		if (result != null) {
 			System.out.println("\033[32m[+] Parsed function definition: \n\033[0m"+result);
 		} else {
