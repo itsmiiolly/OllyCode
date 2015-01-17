@@ -12,6 +12,7 @@ import nl.thijsmolendijk.ollycode.ast.expression.BooleanExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.FunctionCallExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.IdentifierExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.MemberExpression;
+import nl.thijsmolendijk.ollycode.ast.expression.NewInstanceExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.NullExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.NumberLiteralExpression;
 import nl.thijsmolendijk.ollycode.ast.expression.StringLiteralExpression;
@@ -27,6 +28,7 @@ import nl.thijsmolendijk.ollycode.ast.statement.IfStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.ReturnStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.VariableDefinitionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.WhileStatement;
+import nl.thijsmolendijk.ollycode.lexing.OCToken;
 import nl.thijsmolendijk.ollycode.lexing.OCTokenType;
 import nl.thijsmolendijk.ollycode.lexing.OCTokenizingRuleSet;
 
@@ -45,6 +47,7 @@ public class OCParser extends BasicParser {
 		.character('{', BEGIN_BLOCK)
 		.character('}', END_BLOCK)
 		.identifier("def", DEF)
+		.identifier("new", NEW)
 		.identifier("null", NULL)
 		.identifier("true", TRUE)
 		.identifier("false", FALSE)
@@ -526,7 +529,21 @@ public class OCParser extends BasicParser {
 	private Expression parseOtherExpression() {
 		Expression returnValue = null;
 
-		if (isType(IDENTIFIER)) {
+		if (isType(NEW)) {
+			nextToken(); //consume new
+			Expression className = parseExpression();
+			if (!(className instanceof IdentifierExpression)) showErrorMessage("Expected class name after 'new', received %s (%s)", className.toString(), className.getClass().getSimpleName());
+			List<Expression> params = new ArrayList<>();
+			expect('(', "Expected '(' after 'new' classname, received %s");
+			nextToken(); //consume (
+			while (!isChar(')')) {
+				params.add(parseExpression());
+				if (!isChar(')') && !isChar(',')) showErrorMessage("Expected ')' or ',' in 'new' param list, received %s", currentToken.toString());
+			}
+			nextToken(); //consume )
+			
+			return new NewInstanceExpression(className.toString(), params);
+		} else if (isType(IDENTIFIER)) {
 			returnValue = parseIdentifier();
 		} else if (isType(NUMBER)) {
 			returnValue = new NumberLiteralExpression(currentToken.getValue());
@@ -568,13 +585,14 @@ public class OCParser extends BasicParser {
 	 * identifier [= expression|(args)]
 	 */
 	public Expression parseIdentifier() {
+		OCToken prev = previousToken;
 		String id = currentToken.getValue();
 		nextToken();  //eat identifier.
 
 		if (!isChar('(') && !isChar('=')) // If the next token isn't a ( or a =, we assume it is a reference to a variable or class
 			return new IdentifierExpression(id);
 
-		if (previousToken != null && (isType(DEF, previousToken) || isType(VAR, previousToken))) //We want to ignore = and ( if we are in a function definition or variable definition
+		if (previousToken != null && (isType(DEF, prev) || isType(VAR, prev) || isType(NEW, prev))) //We want to ignore = and ( if we are in a function definition or variable definition
 			return new IdentifierExpression(id);
 
 		if (isChar('(')) { // Assume it's a method call

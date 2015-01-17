@@ -14,6 +14,10 @@ public enum OCTokenType {
 	 */
 	DEF,
 	/**
+	 * {@code new} keyword indicating a new object instance
+	 */
+	NEW,
+	/**
 	 * {@code var} keyword indicating a variable definition
 	 */
 	VAR,
