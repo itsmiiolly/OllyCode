@@ -296,14 +296,14 @@ public class OCParser extends BasicParser {
 				if (funcs.stream().anyMatch(x -> x.getName().equalsIgnoreCase(fExpr.getName()) && x.getArgCount() == fExpr.getArgCount()))
 					showErrorMessage("Duplicate function "+fExpr.getName()+" with same amount of parameters");
 
-				if (!hasNewMethod && fExpr.getName().equals("new")) hasNewMethod = true;
+				if (!hasNewMethod && fExpr.getName().equals("create")) hasNewMethod = true;
 				funcs.add(fExpr);
 			}
 		}
 		nextToken(); //consume }
 
 		if (!hasNewMethod) {
-			funcs.add(new FunctionStatement("new", new ArrayList<>(), new BodyStatement(new ArrayList<>())));
+			funcs.add(new FunctionStatement("create", new ArrayList<>(), new BodyStatement(new ArrayList<>())));
 		}
 
 		ClassDefinitionStatement retval = new ClassDefinitionStatement(name, parents, vars, funcs);

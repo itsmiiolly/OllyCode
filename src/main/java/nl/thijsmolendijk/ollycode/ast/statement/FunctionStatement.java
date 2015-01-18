@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.thijsmolendijk.ollycode.ast.Statement;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCFunction;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents a function in OllyCode with a name, arguments and body
@@ -31,5 +34,10 @@ public class FunctionStatement implements Statement {
 	@Override
 	public String toString() {
 		return "def " + name + "(" + argumentNames.stream().collect(Collectors.joining(", ")) + ") {\n" + body + "\n}";
+	}
+
+	@Override
+	public OCObject eval(Interpreter interpreter) {
+		return new OCFunction(name, argumentNames, body);
 	}
 }

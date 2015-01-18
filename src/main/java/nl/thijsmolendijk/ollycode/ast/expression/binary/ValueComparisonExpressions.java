@@ -2,6 +2,9 @@ package nl.thijsmolendijk.ollycode.ast.expression.binary;
 
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.expression.BinaryExpression;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCBoolean;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Container class for all numeric binary operations in OllyCode.
@@ -16,6 +19,15 @@ public class ValueComparisonExpressions {
 		public And(Expression l, Expression r) {
 			super("&&", l, r);
 		}
+
+		@Override
+		public OCObject eval(Interpreter interpreter) {
+			OCObject leftResult = left.eval(interpreter);
+			OCObject rightResult = right.eval(interpreter);
+			
+			if (!leftResult.isBoolean() || !rightResult.isBoolean()) throw new RuntimeException("Expected two booleans for &&");
+			return OCBoolean.valueOf(leftResult.toBoolean().booleanValue() && rightResult.toBoolean().booleanValue());
+		}
 	}
 	
 	/**
@@ -25,6 +37,15 @@ public class ValueComparisonExpressions {
 	public static class Or extends BinaryExpression {
 		public Or(Expression l, Expression r) {
 			super("||", l, r);
+		}
+
+		@Override
+		public OCObject eval(Interpreter interpreter) {
+			OCObject leftResult = left.eval(interpreter);
+			OCObject rightResult = right.eval(interpreter);
+			
+			if (!leftResult.isBoolean() || !rightResult.isBoolean()) throw new RuntimeException("Expected two booleans for &&");
+			return OCBoolean.valueOf(leftResult.toBoolean().booleanValue() || rightResult.toBoolean().booleanValue());
 		}
 	}
 	
@@ -39,6 +60,14 @@ public class ValueComparisonExpressions {
 			super("==", l, r);
 			this.returnTrueIfEqual = returnTrueIfEqual;
 		}
+
+		@Override
+		public OCObject eval(Interpreter interpreter) {
+			OCObject leftResult = left.eval(interpreter);
+			OCObject rightResult = right.eval(interpreter);
+			OCBoolean res = OCBoolean.valueOf(leftResult.equals(rightResult));
+			return returnTrueIfEqual ? res : res.not();
+		}
 	}
 	
 	/**
@@ -52,6 +81,15 @@ public class ValueComparisonExpressions {
 			super(">", l, r);
 			this.allowsEqual = eq;
 		}
+
+		@Override
+		public OCObject eval(Interpreter interpreter) {
+			OCObject leftResult = left.eval(interpreter);
+			OCObject rightResult = right.eval(interpreter);
+			
+			if (!leftResult.isNumber() || !rightResult.isNumber()) throw new RuntimeException("Expected two numbers for > and >=");
+			return allowsEqual ? OCBoolean.valueOf(leftResult.toNumber().doubleValue() >= rightResult.toNumber().doubleValue()) : OCBoolean.valueOf(leftResult.toNumber().doubleValue() > rightResult.toNumber().doubleValue());
+		}
 	}
 	
 	/**
@@ -64,6 +102,15 @@ public class ValueComparisonExpressions {
 		public LesserThan(boolean eq, Expression l, Expression r) {
 			super(">", l, r);
 			this.allowsEqual = eq;
+		}
+		
+		@Override
+		public OCObject eval(Interpreter interpreter) {
+			OCObject leftResult = left.eval(interpreter);
+			OCObject rightResult = right.eval(interpreter);
+			
+			if (!leftResult.isNumber() || !rightResult.isNumber()) throw new RuntimeException("Expected two numbers for < and <=");
+			return allowsEqual ? OCBoolean.valueOf(leftResult.toNumber().doubleValue() <= rightResult.toNumber().doubleValue()) : OCBoolean.valueOf(leftResult.toNumber().doubleValue() < rightResult.toNumber().doubleValue());
 		}
 	}
 }

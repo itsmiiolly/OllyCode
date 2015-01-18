@@ -8,8 +8,8 @@ import nl.thijsmolendijk.ollycode.ast.Expression;
  * @author molenzwiebel
  */
 public abstract class BinaryExpression implements Expression {
-	private Expression left;
-	private Expression right;
+	protected Expression left;
+	protected Expression right;
 	private String operation;
 
 	public BinaryExpression(String o, Expression l, Expression r) {

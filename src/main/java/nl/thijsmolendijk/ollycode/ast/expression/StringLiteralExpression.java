@@ -1,6 +1,9 @@
 package nl.thijsmolendijk.ollycode.ast.expression;
 
 import nl.thijsmolendijk.ollycode.ast.Expression;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
+import nl.thijsmolendijk.ollycode.runtime.OCString;
 
 /**
  * Represents a string literal in ollycode
@@ -16,5 +19,10 @@ public class StringLiteralExpression implements Expression {
 	@Override
 	public String toString() {
 		return "\"" + value + "\"";
+	}
+
+	@Override
+	public OCObject eval(Interpreter interpreter) {
+		return new OCString(value);
 	}
 }

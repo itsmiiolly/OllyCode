@@ -1,5 +1,8 @@
 package nl.thijsmolendijk.ollycode.ast;
 
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
+
 /**
  * Represents part of the Abstract Syntax Tree that the OCParser creates from the source.
  * ASTElements can either be Expressions or Statements. The difference between those is that Expressions <i>always</i> return a value, whereas Statements are not required to.
@@ -14,4 +17,11 @@ public interface ASTElement {
 	 */
 	@Override
 	public String toString();
+	
+	/**
+	 * Evaluates the AST node and returns the result
+	 * @param interpreter the interpreter storing all variables
+	 * @return the result of the evaluation, or null if not applicable (functions without return values for example)
+	 */
+	public OCObject eval(Interpreter interpreter);
 }

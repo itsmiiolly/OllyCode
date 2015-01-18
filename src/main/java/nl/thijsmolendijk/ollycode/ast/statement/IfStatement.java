@@ -4,6 +4,9 @@ import java.util.List;
 
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.Statement;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
+import nl.thijsmolendijk.ollycode.runtime.ReturnException;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,6 +40,24 @@ public class IfStatement implements Statement {
 				builder = builder.append(" else {\n").append(ifElse).append("\n}");
 			}
 			return builder.toString();
+		}
+	}
+
+	@Override
+	public OCObject eval(Interpreter interpreter) {
+		try {
+			if (condition.eval(interpreter).toBoolean().booleanValue()) {
+				return ifThen.eval(interpreter);
+			} else {
+				for (Pair<Expression, BodyStatement> elseif : elseifs) {
+					if (elseif.getKey().eval(interpreter).toBoolean().booleanValue()) return elseif.getValue().eval(interpreter);
+				}
+			}
+			if (ifElse != null)
+				return ifElse.eval(interpreter);
+			return null;
+		} catch (ReturnException ex) {
+			return ex.getReturn();
 		}
 	}
 }

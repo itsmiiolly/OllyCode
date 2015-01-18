@@ -9,10 +9,12 @@ import nl.thijsmolendijk.ollycode.ast.statement.BodyStatement;
  * @author molenzwiebel
  */
 public class OCFunction extends OCObject {
+	private String name;
 	private List<String> parameters;
 	private BodyStatement body;
 	
-	public OCFunction(List<String> params, BodyStatement body) {
+	public OCFunction(String name, List<String> params, BodyStatement body) {
+		this.name = name;
 		this.parameters = params;
 		this.body = body;
 	}
@@ -22,6 +24,13 @@ public class OCFunction extends OCObject {
 	 */
 	public BodyStatement getBody() {
         return body;
+    }
+	
+	/**
+	 * @return the name of this function
+	 */
+	public String getName() {
+        return name;
     }
 
 	/**
@@ -37,6 +46,19 @@ public class OCFunction extends OCObject {
      */
     public String getParameterName(int index) {
         return parameters.get(index);
+    }
+    
+    /**
+     * Evaluates this function
+     * @param interpreter
+     * @return the result
+     */
+    public OCObject eval(Interpreter interpreter) {
+        try {
+            return body.eval(interpreter);
+        } catch (ReturnException e) {
+            return e.getReturn();
+        }
     }
 
 	@Override

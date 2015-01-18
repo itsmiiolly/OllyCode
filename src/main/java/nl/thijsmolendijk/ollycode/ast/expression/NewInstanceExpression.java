@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.thijsmolendijk.ollycode.ast.Expression;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCInstance;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Expression that represents the creation of a new object.
@@ -20,6 +23,14 @@ public class NewInstanceExpression implements Expression {
 	
 	@Override
 	public String toString() {
-		return "new " + className + "(" + params.stream().map(Object::toString).collect(Collectors.joining(", ")) + ")";
+		return "create " + className + "(" + params.stream().map(Object::toString).collect(Collectors.joining(", ")) + ")";
+	}
+
+	@Override
+	public OCObject eval(Interpreter interpreter) {
+		OCInstance instance = new OCInstance(interpreter.getRuntime(), interpreter.getRuntime().getClass(className));
+		List<OCObject> args = params.stream().map(x -> x.eval(interpreter)).collect(Collectors.toList());
+		instance.getInterpreter().invokeFunction("create", args);
+		return instance;
 	}
 }

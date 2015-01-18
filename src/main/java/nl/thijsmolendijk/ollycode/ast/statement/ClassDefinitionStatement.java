@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.thijsmolendijk.ollycode.ast.Statement;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents the definition of a class in ollycode. A class can have multiple superclasses, can implement java interfaces and can only declare variable definitions or functions on the top level.
@@ -20,6 +22,34 @@ public class ClassDefinitionStatement implements Statement {
 		this.parentClasses = parents;
 		this.variables = vars;
 		this.functions = funcs;
+	}
+	
+	/**
+	 * @return the name of this class
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	/**
+	 * @return the superclasses of this class
+	 */
+	public List<String> getSuperclasses() {
+		return parentClasses;
+	}
+	
+	/**
+	 * @return all the functions in this class
+	 */
+	public List<FunctionStatement> getDefinedFunctions() {
+		return functions;
+	}
+	
+	/**
+	 * @return all the instance variables in this class
+	 */
+	public List<VariableDefinitionStatement> getInstanceVariableDefinitions() {
+		return variables;
 	}
 	
 	@Override
@@ -39,5 +69,10 @@ public class ClassDefinitionStatement implements Statement {
 		}
 		ret.append("}");
 		return ret.toString();
+	}
+
+	@Override
+	public OCObject eval(Interpreter interpreter) {
+		throw new UnsupportedOperationException();
 	}
 }

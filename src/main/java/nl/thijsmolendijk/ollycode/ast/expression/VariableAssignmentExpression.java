@@ -1,6 +1,8 @@
 package nl.thijsmolendijk.ollycode.ast.expression;
 
 import nl.thijsmolendijk.ollycode.ast.Expression;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents the assigning of a value to a variable. Note that this is classified as an expression because it will return its new value so that some tricky if statements are possible.
@@ -19,5 +21,12 @@ public class VariableAssignmentExpression implements Expression {
 	@Override
 	public String toString() {
 		return variableName + " = " + value;
+	}
+
+	@Override
+	public OCObject eval(Interpreter interpreter) {
+		OCObject result = value.eval(interpreter);
+		interpreter.setVariable(variableName, result);
+		return result;
 	}
 }

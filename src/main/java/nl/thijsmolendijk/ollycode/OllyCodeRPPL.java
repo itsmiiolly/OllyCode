@@ -8,12 +8,17 @@ import java.util.Arrays;
 import nl.thijsmolendijk.ollycode.ast.ASTElement;
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.Statement;
+import nl.thijsmolendijk.ollycode.ast.expression.NewInstanceExpression;
 import nl.thijsmolendijk.ollycode.ast.statement.BodyStatement;
+import nl.thijsmolendijk.ollycode.ast.statement.ClassDefinitionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.FunctionStatement;
 import nl.thijsmolendijk.ollycode.ast.statement.ReturnStatement;
 import nl.thijsmolendijk.ollycode.lexing.OCToken;
 import nl.thijsmolendijk.ollycode.lexing.OCTokenType;
 import nl.thijsmolendijk.ollycode.parsing.OCParser;
+import nl.thijsmolendijk.ollycode.runtime.Interpreter;
+import nl.thijsmolendijk.ollycode.runtime.OCInstance;
+import nl.thijsmolendijk.ollycode.runtime.OCRuntime;
 
 /**
  * A simple OllyCode ReadParsePrintLoop. The class simply reads from stdin and parses it using the {@link OCParser}. If parsed correctly, it will return the exact input.
@@ -26,39 +31,46 @@ public class OllyCodeRPPL {
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String line = null;
+		OCRuntime runtime = new OCRuntime();
 		
 		System.out.print("> ");
 		while ((line = br.readLine()) != null) {
 		    OCParser parser = new OCParser(line);
 		    OCToken currentToken = parser.getCurrentToken();
 		    if (currentToken.getType() == OCTokenType.EOF) break;
-		    else if (currentToken.getType() == OCTokenType.CLASS) handleCls(parser);
-		    else if (currentToken.getType() == OCTokenType.DEF) handleDefinition(parser);
+		    else if (currentToken.getType() == OCTokenType.CLASS) handleCls(runtime, parser);
+		    else if (currentToken.getType() == OCTokenType.DEF) handleDefinition(runtime, parser);
 		    else if (currentToken.getType() == OCTokenType.CHARACTER && currentToken.getValue().equals(';')) System.out.println("; detected, doing nothin'");
-		    else handleTopLevelExpression(parser);
+		    else handleTopLevelExpression(runtime, parser);
 		    System.out.print("> ");
 		}
 	}
 	
-	private static void handleCls(OCParser parser) {
+	private static void handleCls(OCRuntime rt, OCParser parser) {
 		Statement result = parser.parseClassStatement();
 		if (result != null) {
-			System.out.println("\033[32m[+] Parsed class: \n\033[0m"+result);
+			rt.defineClass((ClassDefinitionStatement) result);
+			System.out.println("\033[32m[+] Parsed class. \n\033[0m");
 		} else {
 			parser.nextToken(); //Advance to the next token if something is messed up
 		}
 	}
 
-	private static void handleDefinition(OCParser parser) {
-		Statement result = parser.parseFunctionDefinitionStatement();
+	private static void handleDefinition(OCRuntime rt, OCParser parser) {
+		FunctionStatement result = (FunctionStatement) parser.parseFunctionDefinitionStatement();
 		if (result != null) {
-			System.out.println("\033[32m[+] Parsed function definition: \n\033[0m"+result);
+			FunctionStatement newFunc = new FunctionStatement("create", new ArrayList<>(), new BodyStatement(new ArrayList<>()));
+			ClassDefinitionStatement anonClazz = new ClassDefinitionStatement("AnonClass", new ArrayList<>(), new ArrayList<>(), Arrays.asList(newFunc, result));
+			rt.defineClass(anonClazz);
+			NewInstanceExpression newExpr = new NewInstanceExpression("AnonClass", new ArrayList<>());
+			OCInstance instance = (OCInstance) newExpr.eval(new Interpreter(rt));
+			System.out.println("\033[32m[+] Parsed function definition. Result: \n\033[0m"+instance.getInterpreter().invokeFunction(result.getName(), new ArrayList<>()));
 		} else {
 			parser.nextToken(); //Advance to the next token if something is messed up
 		}
 	}
 
-	private static void handleTopLevelExpression(OCParser parser) {
+	private static void handleTopLevelExpression(OCRuntime rt, OCParser parser) {
 		ASTElement result = parser.parseExpression();
 		if (result != null) {
 			result = new ReturnStatement((Expression) result);

@@ -21,24 +21,6 @@ public class OCBoolean extends OCObject {
 	}
 
 	/**
-	 * Performs logical AND on this boolean
-	 * @param bool the other boolean
-	 * @return if both this boolean and the provided boolean are true
-	 */
-	public OCBoolean and(OCBoolean bool) {
-		return valueOf(this.value && bool.value);
-	}
-
-	/**
-	 * Performs logical OR on this boolean
-	 * @param bool the other boolean
-	 * @return if this boolean or the provided boolean is true
-	 */
-	public OCBoolean or(OCBoolean bool) {
-		return valueOf(this.value || bool.value);
-	}
-
-	/**
 	 * Inverts the boolean and returns a new value
 	 * @return the inverted boolean
 	 */
