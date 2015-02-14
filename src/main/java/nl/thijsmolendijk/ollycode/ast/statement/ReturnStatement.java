@@ -1,10 +1,8 @@
 package nl.thijsmolendijk.ollycode.ast.statement;
 
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.Statement;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
-import nl.thijsmolendijk.ollycode.runtime.ReturnException;
 
 /**
  * Represents the return statement.
@@ -23,7 +21,7 @@ public class ReturnStatement implements Statement {
 	}
 
 	@Override
-	public OCObject eval(Interpreter interpreter) {
-		throw new ReturnException(value.eval(interpreter));
+	public <T> T accept(ASTVisitor<T> visitor) {
+		return visitor.visitNode(this);
 	}
 }

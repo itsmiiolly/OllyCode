@@ -1,10 +1,8 @@
 package nl.thijsmolendijk.ollycode.ast.expression.binary;
 
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Expression;
 import nl.thijsmolendijk.ollycode.ast.expression.BinaryExpression;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCNumber;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Container class for all numeric binary operations in OllyCode.
@@ -21,12 +19,8 @@ public class NumericOperationExpressions {
 		}
 
 		@Override
-		public OCObject eval(Interpreter interpreter) {
-			OCObject leftResult = left.eval(interpreter);
-			OCObject rightResult = right.eval(interpreter);
-			
-			if (!leftResult.isNumber() || !rightResult.isNumber()) throw new RuntimeException("Expected two numbers for -");
-			return new OCNumber(leftResult.toNumber().doubleValue() - rightResult.toNumber().doubleValue());
+		public <T> T accept(ASTVisitor<T> visitor) {
+			return visitor.visitNode(this);
 		}
 	}
 	
@@ -40,12 +34,8 @@ public class NumericOperationExpressions {
 		}
 
 		@Override
-		public OCObject eval(Interpreter interpreter) {
-			OCObject leftResult = left.eval(interpreter);
-			OCObject rightResult = right.eval(interpreter);
-			
-			if (!leftResult.isNumber() || !rightResult.isNumber()) throw new RuntimeException("Expected two numbers for *");
-			return new OCNumber(leftResult.toNumber().doubleValue() * rightResult.toNumber().doubleValue());
+		public <T> T accept(ASTVisitor<T> visitor) {
+			return visitor.visitNode(this);
 		}
 	}
 	
@@ -59,12 +49,8 @@ public class NumericOperationExpressions {
 		}
 
 		@Override
-		public OCObject eval(Interpreter interpreter) {
-			OCObject leftResult = left.eval(interpreter);
-			OCObject rightResult = right.eval(interpreter);
-			
-			if (!leftResult.isNumber() || !rightResult.isNumber()) throw new RuntimeException("Expected two numbers for /");
-			return new OCNumber(leftResult.toNumber().doubleValue() / rightResult.toNumber().doubleValue());
+		public <T> T accept(ASTVisitor<T> visitor) {
+			return visitor.visitNode(this);
 		}
 	}
 }

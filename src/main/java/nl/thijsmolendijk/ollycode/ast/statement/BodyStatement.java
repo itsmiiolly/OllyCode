@@ -4,9 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.thijsmolendijk.ollycode.ast.ASTElement;
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Statement;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents a body (between { and }) with multiple ASTElements in it
@@ -25,11 +24,7 @@ public class BodyStatement implements Statement {
 	}
 
 	@Override
-	public OCObject eval(Interpreter interpreter) {
-		OCObject ret = null;
-        for (ASTElement statement : contents) {
-            ret = statement.eval(interpreter);
-        }
-        return ret;
+	public <T> T accept(ASTVisitor<T> visitor) {
+		return visitor.visitNode(this);
 	}
 }

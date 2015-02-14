@@ -1,7 +1,5 @@
 package nl.thijsmolendijk.ollycode.ast;
 
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents part of the Abstract Syntax Tree that the OCParser creates from the source.
@@ -19,9 +17,9 @@ public interface ASTElement {
 	public String toString();
 	
 	/**
-	 * Evaluates the AST node and returns the result
-	 * @param interpreter the interpreter storing all variables
-	 * @return the result of the evaluation, or null if not applicable (functions without return values for example)
+	 * Accepts an AST visitor.
+	 * @param visitor The visitor
+	 * @return The return value of the visitor
 	 */
-	public OCObject eval(Interpreter interpreter);
+	public <T> T accept(ASTVisitor<T> visitor);
 }

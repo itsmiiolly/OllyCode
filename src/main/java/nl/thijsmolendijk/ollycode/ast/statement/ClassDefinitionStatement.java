@@ -3,9 +3,8 @@ package nl.thijsmolendijk.ollycode.ast.statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Statement;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents the definition of a class in ollycode. A class can have multiple superclasses, can implement java interfaces and can only declare variable definitions or functions on the top level.
@@ -72,7 +71,7 @@ public class ClassDefinitionStatement implements Statement {
 	}
 
 	@Override
-	public OCObject eval(Interpreter interpreter) {
-		throw new UnsupportedOperationException();
+	public <T> T accept(ASTVisitor<T> visitor) {
+		return visitor.visitNode(this);
 	}
 }

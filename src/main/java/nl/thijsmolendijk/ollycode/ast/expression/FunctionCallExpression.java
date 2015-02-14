@@ -3,9 +3,8 @@ package nl.thijsmolendijk.ollycode.ast.expression;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Expression;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 public class FunctionCallExpression implements Expression {
 	public String functionName;
@@ -22,7 +21,7 @@ public class FunctionCallExpression implements Expression {
 	}
 
 	@Override
-	public OCObject eval(Interpreter interpreter) {
-		return interpreter.invokeFunction(functionName, arguments.stream().map(x -> x.eval(interpreter)).collect(Collectors.toList()));
+	public <T> T accept(ASTVisitor<T> visitor) {
+		return visitor.visitNode(this);
 	}
 }

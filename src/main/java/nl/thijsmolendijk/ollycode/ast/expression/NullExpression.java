@@ -1,9 +1,7 @@
 package nl.thijsmolendijk.ollycode.ast.expression;
 
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Expression;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCNull;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents the null expression indicating that there is no value
@@ -16,7 +14,7 @@ public class NullExpression implements Expression {
 	}
 
 	@Override
-	public OCObject eval(Interpreter interpreter) {
-		return OCNull.INSTANCE;
+	public <T> T accept(ASTVisitor<T> visitor) {
+		return visitor.visitNode(this);
 	}
 }

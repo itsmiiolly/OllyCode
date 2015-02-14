@@ -1,24 +1,6 @@
 package nl.thijsmolendijk.ollycode;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import nl.thijsmolendijk.ollycode.ast.ASTElement;
-import nl.thijsmolendijk.ollycode.ast.Expression;
-import nl.thijsmolendijk.ollycode.ast.Statement;
-import nl.thijsmolendijk.ollycode.ast.expression.NewInstanceExpression;
-import nl.thijsmolendijk.ollycode.ast.statement.BodyStatement;
-import nl.thijsmolendijk.ollycode.ast.statement.ClassDefinitionStatement;
-import nl.thijsmolendijk.ollycode.ast.statement.FunctionStatement;
-import nl.thijsmolendijk.ollycode.ast.statement.ReturnStatement;
-import nl.thijsmolendijk.ollycode.lexing.OCToken;
-import nl.thijsmolendijk.ollycode.lexing.OCTokenType;
 import nl.thijsmolendijk.ollycode.parsing.OCParser;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCInstance;
-import nl.thijsmolendijk.ollycode.runtime.OCRuntime;
 
 /**
  * A simple OllyCode ReadParsePrintLoop. The class simply reads from stdin and parses it using the {@link OCParser}. If parsed correctly, it will return the exact input.
@@ -29,7 +11,10 @@ public class OllyCodeRPPL {
 		System.out.println("[!] OllyCode RPPL (Read Parse Print Loop) v0.1-SNAPSHOT");
 		System.out.println("[!] (c) 2015 by molenzwiebel and ItsMiiOlly");
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("WIP: At the moment not exactly working (as in, not at all)");
+	}
+		
+		/*BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String line = null;
 		OCRuntime runtime = new OCRuntime();
 		
@@ -78,5 +63,5 @@ public class OllyCodeRPPL {
 		} else {
 			parser.nextToken(); //Advance to the next token if something is messed up
 		}
-	}
+	}*/
 }

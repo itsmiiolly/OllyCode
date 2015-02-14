@@ -1,12 +1,7 @@
 package nl.thijsmolendijk.ollycode.ast.expression;
 
-import java.util.stream.Collectors;
-
+import nl.thijsmolendijk.ollycode.ast.ASTVisitor;
 import nl.thijsmolendijk.ollycode.ast.Expression;
-import nl.thijsmolendijk.ollycode.runtime.Interpreter;
-import nl.thijsmolendijk.ollycode.runtime.OCInstance;
-import nl.thijsmolendijk.ollycode.runtime.OCNull;
-import nl.thijsmolendijk.ollycode.runtime.OCObject;
 
 /**
  * Represents the accessing or calling of a member.
@@ -31,17 +26,7 @@ public class MemberExpression implements Expression {
 	}
 
 	@Override
-	public OCObject eval(Interpreter interpreter) {
-		OCObject actor = parent.eval(interpreter);
-		if (!(actor instanceof OCInstance)) throw new RuntimeException("Expected member expression to call method or get variable on an object");
-		OCInstance instance = (OCInstance) actor;
-		if (member instanceof FunctionCallExpression) {
-			FunctionCallExpression fc = (FunctionCallExpression) member;
-			return instance.getInterpreter().invokeFunction(fc.functionName, fc.arguments.stream().map(x -> x.eval(interpreter)).collect(Collectors.toList()));
-		}
-		if (member instanceof IdentifierExpression) {
-			return instance.getInterpreter().getVariable(member.toString());
-		}
-		return OCNull.INSTANCE;
+	public <T> T accept(ASTVisitor<T> visitor) {
+		return visitor.visitNode(this);
 	}
 }
